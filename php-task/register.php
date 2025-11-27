@@ -69,7 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     // Create new student account
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $pdo->prepare("INSERT INTO students (name, email, password, phone, created_at) VALUES (?, ?, ?, ?, NOW())");
+                    $stmt = $pdo->prepare("INSERT INTO students 
+                                         (name, email, password, phone, created_at) 
+                                         VALUES (?, ?, ?, ?, NOW())");
                     $stmt->execute([$name, $email, $hashedPassword, $phone]);
                     
                     // Get the new user's ID and log them in
@@ -256,7 +258,9 @@ $pageTitle = 'Register';
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                    width="64" height="64" viewBox="0 0 24 24" fill="none" 
+                    stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
                     <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
                 </svg>

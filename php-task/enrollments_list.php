@@ -17,7 +17,9 @@ include 'includes/header.php';
 <div class="container">
     <div class="card">
         <h2 class="card-title">Enrollment List</h2>
-        <p style="color: #7f8c8d; text-align: center; padding: 2rem;">Enrollment list functionality will be implemented here.</p>
+        <p style="color: #7f8c8d; text-align: center; padding: 2rem;">
+            Enrollment list functionality will be implemented here.
+        </p>
     </div>
 </div>
 
