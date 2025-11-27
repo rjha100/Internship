@@ -1,7 +1,7 @@
 <?php
 /**
  * Registration Page
- * Handles new student registration
+ * Handles new student and professor registration
  */
 require_once 'config/session.php';
 require_once 'config/database.php';
@@ -14,6 +14,13 @@ $errors = [];
 $name = '';
 $email = '';
 $phone = '';
+$role = 'student';
+$selectedCourse = '';
+
+// Get available courses for professor registration
+$pdo = getDBConnection();
+$coursesStmt = $pdo->query("SELECT id, course_name FROM courses ORDER BY course_name");
+$courses = $coursesStmt->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verify CSRF token
@@ -26,6 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $phone = sanitizeInput($_POST['phone'] ?? '');
         $password = $_POST['password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
+        $role = sanitizeInput($_POST['role'] ?? 'student');
+        $selectedCourse = (int)($_POST['course_id'] ?? 0);
+
+        // Validate role
+        if (!in_array($role, ['student', 'professor'])) {
+            $role = 'student';
+        }
 
         // Validate inputs
         if (empty($name)) {
@@ -56,29 +70,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['confirm_password'] = 'Passwords do not match.';
         }
 
+        // Professor must select a course
+        if ($role === 'professor' && empty($selectedCourse)) {
+            $errors['course'] = 'Please select a course to teach.';
+        }
+
         // If no validation errors, check if email exists and create account
         if (empty($errors)) {
             try {
-                $pdo = getDBConnection();
-                
                 // Check if email already exists
-                $stmt = $pdo->prepare("SELECT id FROM students WHERE email = ?");
+                $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
                 $stmt->execute([$email]);
                 if ($stmt->fetch()) {
                     $errors['email'] = 'This email is already registered.';
                 } else {
-                    // Create new student account
+                    // Create new user account
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $pdo->prepare("INSERT INTO students 
-                                         (name, email, password, phone, created_at) 
-                                         VALUES (?, ?, ?, ?, NOW())");
-                    $stmt->execute([$name, $email, $hashedPassword, $phone]);
-                    
-                    // Get the new user's ID and log them in
+                    $stmt = $pdo->prepare("INSERT INTO users 
+                                         (name, email, password, phone, role, created_at) 
+                                         VALUES (?, ?, ?, ?, ?, NOW())");
+                    $stmt->execute([$name, $email, $hashedPassword, $phone, $role]);
+
+                    // Get the new user's ID
                     $userId = $pdo->lastInsertId();
-                    setUserSession($userId, $name, $email);
+
+                    // If professor, assign them to the selected course
+                    if ($role === 'professor' && $selectedCourse > 0) {
+                        $stmt = $pdo->prepare("INSERT INTO professor_courses (professor_id, course_id) VALUES (?, ?)");
+                        $stmt->execute([$userId, $selectedCourse]);
+                    }
+
+                    // Log them in
+                    setUserSession($userId, $name, $email, $role);
                     setFlashMessage('success', 'Registration successful! Welcome to the Student Management System.');
-                    header('Location: dashboard.php');
+                    
+                    // Redirect based on role
+                    if ($role === 'professor') {
+                        header('Location: professor/dashboard.php');
+                    } else {
+                        header('Location: student/dashboard.php');
+                    }
                     exit();
                 }
             } catch (PDOException $e) {
@@ -96,6 +127,9 @@ $pageTitle = 'Register';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo escape($pageTitle); ?> - Student Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -104,94 +138,166 @@ $pageTitle = 'Register';
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem 0;
-        }
-
-        .auth-container {
-            max-width: 450px;
-            width: 100%;
             padding: 1rem;
         }
 
-        .auth-card {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            padding: 2.5rem;
+        .auth-container {
+            max-width: 420px;
+            width: 100%;
         }
 
-        .auth-logo {
+        .brand-header {
             text-align: center;
             margin-bottom: 1.5rem;
         }
 
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 16px;
+            margin-bottom: 0.75rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .brand-logo svg {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        .brand-name {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .brand-tagline {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.9rem;
+        }
+
+        .auth-card {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 2.5rem;
+        }
+
         .auth-title {
             text-align: center;
-            color: #2c3e50;
+            color: #1a1a2e;
             margin-bottom: 0.5rem;
             font-size: 1.75rem;
+            font-weight: 700;
         }
 
         .auth-subtitle {
             text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 1.75rem;
+            font-size: 0.95rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background-color: #f3f4f6;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 1.75rem;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            text-decoration: none;
+            color: #6b7280;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .auth-tab:hover {
+            color: #1a1a2e;
+        }
+
+        .auth-tab.active {
+            background-color: white;
+            color: #1a1a2e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .form-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: #2c3e50;
+            margin-bottom: 0.4rem;
+            color: #1a1a2e;
             font-weight: 500;
+            font-size: 0.9rem;
         }
 
         .form-control {
             width: 100%;
-            padding: 0.875rem;
-            border: 2px solid #e1e1e1;
-            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
             font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+
+        .form-control::placeholder {
+            color: #9ca3af;
         }
 
         .form-control:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
         .form-control.error {
             border-color: #dc2626;
+            background-color: #fef2f2;
         }
 
         .error-message {
             color: #dc2626;
-            font-size: 0.85rem;
-            margin-top: 0.35rem;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
         }
 
         .btn {
-            display: inline-block;
-            padding: 0.875rem 1.5rem;
+            display: block;
+            width: 100%;
+            padding: 0.95rem 1.5rem;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
             text-decoration: none;
             font-size: 1rem;
             font-weight: 600;
-            transition: all 0.3s;
-            width: 100%;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            margin-top: 0.75rem;
         }
 
         .btn-primary {
@@ -201,35 +307,24 @@ $pageTitle = 'Register';
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         .alert {
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
+            padding: 0.875rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            font-size: 0.9rem;
         }
 
         .alert-error {
-            background-color: #fee2e2;
+            background-color: #fef2f2;
             color: #dc2626;
             border: 1px solid #fecaca;
-        }
-
-        .auth-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            color: #7f8c8d;
-        }
-
-        .auth-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .auth-link a:hover {
-            text-decoration: underline;
         }
 
         .required {
@@ -237,36 +332,105 @@ $pageTitle = 'Register';
         }
 
         .email-status {
-            font-size: 0.85rem;
-            margin-top: 0.35rem;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
         }
 
         .email-status.checking {
-            color: #7f8c8d;
+            color: #6b7280;
         }
 
         .email-status.available {
-            color: #059669;
+            color: #16a34a;
         }
 
         .email-status.taken {
             color: #dc2626;
         }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .role-selector {
+            display: flex;
+            background-color: #f3f4f6;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 1.25rem;
+        }
+
+        .role-option {
+            flex: 1;
+            text-align: center;
+        }
+
+        .role-option input {
+            display: none;
+        }
+
+        .role-option label {
+            display: block;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .role-option input:checked + label {
+            background-color: white;
+            color: #1a1a2e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .role-option label:hover {
+            color: #1a1a2e;
+        }
+
+        .course-select-group {
+            display: none;
+            margin-bottom: 1.25rem;
+        }
+
+        .course-select-group.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-logo">
+        <div class="brand-header">
+            <div class="brand-logo">
                 <svg xmlns="http://www.w3.org/2000/svg" 
-                    width="64" height="64" viewBox="0 0 24 24" fill="none" 
-                    stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                >
                     <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
                     <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
                 </svg>
             </div>
-            <h1 class="auth-title">Create Account</h1>
-            <p class="auth-subtitle">Register as a new student</p>
+            <h2 class="brand-name">Student Management</h2>
+            <p class="brand-tagline">Manage your courses and enrollments</p>
+        </div>
+        <div class="auth-card">
+            <h1 class="auth-title">Create an account</h1>
+            <p class="auth-subtitle">Join us today! Enter your details to get started.</p>
+
+            <div class="auth-tabs">
+                <a href="register.php" class="auth-tab active">Sign up</a>
+                <a href="login.php" class="auth-tab">Log in</a>
+            </div>
 
             <?php if (isset($errors[0])) : ?>
                 <div class="alert alert-error">
@@ -277,6 +441,36 @@ $pageTitle = 'Register';
             <form method="POST" action="" id="registerForm">
                 <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                 
+                <!-- Role Selection -->
+                <div class="role-selector">
+                    <div class="role-option">
+                        <input type="radio" id="role_student" name="role" value="student" 
+                               <?php echo $role === 'student' ? 'checked' : ''; ?>>
+                        <label for="role_student">🎓 Student</label>
+                    </div>
+                    <div class="role-option">
+                        <input type="radio" id="role_professor" name="role" value="professor"
+                               <?php echo $role === 'professor' ? 'checked' : ''; ?>>
+                        <label for="role_professor">👨‍🏫 Professor</label>
+                    </div>
+                </div>
+
+                <!-- Course Selection (for professors) -->
+                <div class="course-select-group <?php echo $role === 'professor' ? 'visible' : ''; ?>" id="courseSelectGroup">
+                    <label for="course_id">Select Course to Teach <span class="required">*</span></label>
+                    <select name="course_id" id="course_id" class="form-control <?php echo isset($errors['course']) ? 'error' : ''; ?>">
+                        <option value="">-- Choose a course --</option>
+                        <?php foreach ($courses as $course) : ?>
+                            <option value="<?php echo $course['id']; ?>" <?php echo $selectedCourse == $course['id'] ? 'selected' : ''; ?>>
+                                <?php echo escape($course['course_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php if (isset($errors['course'])) : ?>
+                        <div class="error-message"><?php echo escape($errors['course']); ?></div>
+                    <?php endif; ?>
+                </div>
+
                 <div class="form-group">
                     <label for="name">Full Name <span class="required">*</span></label>
                     <input type="text" id="name" name="name" 
@@ -289,7 +483,7 @@ $pageTitle = 'Register';
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email Address <span class="required">*</span></label>
+                    <label for="email">Email <span class="required">*</span></label>
                     <input type="email" id="email" name="email" 
                            class="form-control <?php echo isset($errors['email']) ? 'error' : ''; ?>" 
                            value="<?php echo escape($email); ?>" 
@@ -311,36 +505,59 @@ $pageTitle = 'Register';
                     <?php endif; ?>
                 </div>
 
-                <div class="form-group">
-                    <label for="password">Password <span class="required">*</span></label>
-                    <input type="password" id="password" name="password" 
-                           class="form-control <?php echo isset($errors['password']) ? 'error' : ''; ?>" 
-                           placeholder="Create a password (min. 6 characters)" required>
-                    <?php if (isset($errors['password'])) : ?>
-                        <div class="error-message"><?php echo escape($errors['password']); ?></div>
-                    <?php endif; ?>
-                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password <span class="required">*</span></label>
+                        <input type="password" id="password" name="password" 
+                               class="form-control <?php echo isset($errors['password']) ? 'error' : ''; ?>" 
+                               placeholder="••••••••" required>
+                        <?php if (isset($errors['password'])) : ?>
+                            <div class="error-message"><?php echo escape($errors['password']); ?></div>
+                        <?php endif; ?>
+                    </div>
 
-                <div class="form-group">
-                    <label for="confirm_password">Confirm Password <span class="required">*</span></label>
-                    <input type="password" id="confirm_password" name="confirm_password" 
-                           class="form-control <?php echo isset($errors['confirm_password']) ? 'error' : ''; ?>" 
-                           placeholder="Confirm your password" required>
-                    <?php if (isset($errors['confirm_password'])) : ?>
-                        <div class="error-message"><?php echo escape($errors['confirm_password']); ?></div>
-                    <?php endif; ?>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm <span class="required">*</span></label>
+                        <input type="password" id="confirm_password" name="confirm_password" 
+                               class="form-control <?php echo isset($errors['confirm_password']) ? 'error' : ''; ?>" 
+                               placeholder="••••••••" required>
+                        <?php if (isset($errors['confirm_password'])) : ?>
+                            <div class="error-message"><?php echo escape($errors['confirm_password']); ?></div>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="submitBtn">Create Account</button>
             </form>
-
-            <div class="auth-link">
-                Already have an account? <a href="login.php">Sign in here</a>
-            </div>
         </div>
     </div>
 
     <script>
+        // Role selection - show/hide course dropdown
+        const roleInputs = document.querySelectorAll('input[name="role"]');
+        const courseSelectGroup = document.getElementById('courseSelectGroup');
+        const courseSelect = document.getElementById('course_id');
+
+        roleInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.value === 'professor') {
+                    courseSelectGroup.classList.add('visible');
+                    courseSelect.required = true;
+                } else {
+                    courseSelectGroup.classList.remove('visible');
+                    courseSelect.required = false;
+                    courseSelect.value = '';
+                }
+            });
+        });
+
+        // Initialize course visibility on page load
+        const checkedRole = document.querySelector('input[name="role"]:checked');
+        if (checkedRole && checkedRole.value === 'professor') {
+            courseSelectGroup.classList.add('visible');
+            courseSelect.required = true;
+        }
+
         // Client-side email validation (checks if email is unique)
         const emailInput = document.getElementById('email');
         const emailStatus = document.getElementById('emailStatus');
@@ -381,11 +598,11 @@ $pageTitle = 'Register';
                 .then(response => response.json())
                 .then(data => {
                     if (data.available) {
-                        emailStatus.textContent = '✓ Email is available';
+                        emailStatus.textContent = 'Email is available';
                         emailStatus.className = 'email-status available';
                         isEmailAvailable = true;
                     } else {
-                        emailStatus.textContent = '✗ Email is already registered';
+                        emailStatus.textContent =  'Email is already registered';
                         emailStatus.className = 'email-status taken';
                         isEmailAvailable = false;
                     }
@@ -426,6 +643,14 @@ $pageTitle = 'Register';
             if (password.length < 6) {
                 e.preventDefault();
                 alert('Password must be at least 6 characters long.');
+                return;
+            }
+
+            // Check if professor selected a course
+            const selectedRole = document.querySelector('input[name="role"]:checked').value;
+            if (selectedRole === 'professor' && !courseSelect.value) {
+                e.preventDefault();
+                alert('Please select a course to teach.');
                 return;
             }
         });

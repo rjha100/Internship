@@ -80,3 +80,23 @@ function getBaseUrl()
     $path = dirname($_SERVER['PHP_SELF']);
     return $protocol . '://' . $host . $path;
 }
+
+/**
+ * Redirect to a URL
+ * @param string $url
+ */
+function redirect($url)
+{
+    header("Location: $url");
+    exit();
+}
+
+/**
+ * Sanitize input (alias for sanitizeInput)
+ * @param string $data
+ * @return string
+ */
+function sanitize($data)
+{
+    return sanitizeInput($data);
+}

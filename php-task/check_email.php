@@ -17,9 +17,9 @@ if (empty($email) || !isValidEmail($email)) {
 
 try {
     $pdo = getDBConnection();
-    $stmt = $pdo->prepare("SELECT id FROM students WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->execute([$email]);
-    
+
     $available = !$stmt->fetch();
     echo json_encode(['available' => $available]);
 } catch (PDOException $e) {

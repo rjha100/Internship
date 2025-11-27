@@ -50,12 +50,113 @@ function getCurrentUserEmail()
  * @param int $id
  * @param string $name
  * @param string $email
+ * @param string $role
  */
-function setUserSession($id, $name, $email)
+function setUserSession($id, $name, $email, $role = 'student')
 {
     $_SESSION['user_id'] = $id;
     $_SESSION['user_name'] = $name;
     $_SESSION['user_email'] = $email;
+    $_SESSION['user_role'] = $role;
+}
+
+/**
+ * Get current logged in user's role
+ * @return string|null
+ */
+function getCurrentUserRole()
+{
+    return $_SESSION['user_role'] ?? null;
+}
+
+/**
+ * Check if current user is a student
+ * @return bool
+ */
+function isStudent()
+{
+    $role = getCurrentUserRole();
+    return $role === 'student' || $role === null; // Treat null/missing role as student for backwards compatibility
+}
+
+/**
+ * Check if current user is a professor
+ * @return bool
+ */
+function isProfessor()
+{
+    return getCurrentUserRole() === 'professor';
+}
+
+/**
+ * Check if current user is an admin
+ * @return bool
+ */
+function isAdmin()
+{
+    return getCurrentUserRole() === 'admin';
+}
+
+/**
+ * Require student role
+ * Redirects to appropriate page if not a student
+ */
+function requireStudent()
+{
+    requireLogin();
+    if (!isStudent()) {
+        header("Location: " . getBaseUrlByRole());
+        exit();
+    }
+}
+
+/**
+ * Require professor role
+ * Redirects to appropriate page if not a professor
+ */
+function requireProfessor()
+{
+    requireLogin();
+    if (!isProfessor()) {
+        header("Location: " . getBaseUrlByRole());
+        exit();
+    }
+}
+
+/**
+ * Require admin role
+ * Redirects to appropriate page if not an admin
+ */
+function requireAdmin()
+{
+    requireLogin();
+    if (!isAdmin()) {
+        header("Location: " . getBaseUrlByRole());
+        exit();
+    }
+}
+
+/**
+ * Get base URL based on user role
+ * Automatically determines correct path based on current directory
+ * @return string
+ */
+function getBaseUrlByRole()
+{
+    $role = getCurrentUserRole();
+    $currentDir = basename(dirname($_SERVER['PHP_SELF']));
+    $isInSubfolder = in_array($currentDir, ['student', 'professor', 'admin']);
+    $prefix = $isInSubfolder ? '../' : '';
+    
+    switch ($role) {
+        case 'admin':
+            return $prefix . 'admin/dashboard.php';
+        case 'professor':
+            return $prefix . 'professor/dashboard.php';
+        case 'student':
+        default:
+            return $prefix . 'student/dashboard.php';
+    }
 }
 
 /**
@@ -83,25 +184,51 @@ function destroyUserSession()
 
 /**
  * Redirect if not logged in
- * @param string $redirectTo
+ * Automatically determines correct login.php path based on current directory
  */
-function requireLogin($redirectTo = 'login.php')
+function requireLogin()
 {
     if (!isLoggedIn()) {
-        header("Location: $redirectTo");
+        // Determine if we're in a subfolder
+        $currentDir = basename(dirname($_SERVER['PHP_SELF']));
+        $isInSubfolder = in_array($currentDir, ['student', 'professor', 'admin']);
+        $loginPath = $isInSubfolder ? '../login.php' : 'login.php';
+        header("Location: $loginPath");
         exit();
     }
 }
 
 /**
  * Redirect if already logged in
- * @param string $redirectTo
+ * Redirects to role-specific dashboard (only use on login/register pages)
  */
-function redirectIfLoggedIn($redirectTo = 'dashboard.php')
+function redirectIfLoggedIn()
 {
     if (isLoggedIn()) {
-        header("Location: $redirectTo");
-        exit();
+        $role = getCurrentUserRole();
+        
+        // Get current script to avoid redirect loops
+        $currentScript = $_SERVER['PHP_SELF'];
+        
+        // Determine target based on role
+        switch ($role) {
+            case 'admin':
+                $target = '/admin/dashboard.php';
+                break;
+            case 'professor':
+                $target = '/professor/dashboard.php';
+                break;
+            case 'student':
+            default:
+                $target = '/student/dashboard.php';
+                break;
+        }
+        
+        // Only redirect if not already on the target page
+        if (strpos($currentScript, $target) === false) {
+            header('Location: ' . ltrim($target, '/'));
+            exit();
+        }
     }
 }
 
