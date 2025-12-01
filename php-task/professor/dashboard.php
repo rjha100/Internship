@@ -61,32 +61,32 @@ $flash = getFlashMessage();
 
     .stat-card {
         background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
+        border-radius: 12px;
+        padding: 1rem;
         border: 1px solid #e5e7eb;
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.75rem;
         transition: all 0.3s ease;
     }
 
     .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
 
     .stat-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .stat-icon svg {
-        width: 26px;
-        height: 26px;
+        width: 20px;
+        height: 20px;
         color: white;
     }
 
@@ -95,40 +95,40 @@ $flash = getFlashMessage();
     .stat-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
 
     .stat-content h3 {
-        font-size: 1.75rem;
+        font-size: 1.35rem;
         color: #1a1a2e;
         font-weight: 700;
-        margin-bottom: 0.15rem;
+        margin-bottom: 0.1rem;
     }
 
     .stat-content p {
         color: #6b7280;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         font-weight: 500;
     }
 
     .welcome-card {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border-radius: 16px;
-        padding: 2rem;
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
         color: white;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 1.5rem;
+        gap: 1rem;
     }
 
     .welcome-content h2 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.35rem;
     }
 
     .welcome-content p {
         opacity: 0.9;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
     }
 
     .welcome-actions {
@@ -140,11 +140,11 @@ $flash = getFlashMessage();
         background: rgba(255,255,255,0.2);
         color: white;
         border: 1px solid rgba(255,255,255,0.3);
-        padding: 0.7rem 1.25rem;
-        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
         text-decoration: none;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         transition: all 0.3s ease;
         backdrop-filter: blur(10px);
     }
@@ -163,6 +163,112 @@ $flash = getFlashMessage();
     @media (max-width: 900px) {
         .content-grid {
             grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .stat-card {
+            padding: 0.75rem;
+            gap: 0.5rem;
+        }
+
+        .stat-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
+
+        .stat-icon svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .stat-content h3 {
+            font-size: 1rem;
+        }
+
+        .stat-content p {
+            font-size: 0.65rem;
+        }
+
+        .welcome-card {
+            padding: 0.875rem 1rem;
+        }
+
+        .welcome-content h2 {
+            font-size: 0.95rem;
+        }
+
+        .welcome-content p {
+            font-size: 0.7rem;
+        }
+
+        .welcome-actions .btn {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.65rem;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            margin-bottom: 0.875rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .course-list li {
+            padding: 0.6rem 0;
+            gap: 0.6rem;
+        }
+
+        .course-list .course-icon {
+            width: 30px;
+            height: 30px;
+        }
+
+        .course-list .course-icon svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .course-list .course-name {
+            font-size: 0.8rem;
+        }
+
+        .profile-item {
+            padding: 0.5rem;
+        }
+
+        .profile-item .icon-wrapper {
+            width: 28px;
+            height: 28px;
+        }
+
+        .profile-item svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .profile-item .info span {
+            font-size: 0.75rem;
+        }
+
+        .profile-item .info small {
+            font-size: 0.65rem;
+        }
+
+        .view-all-link {
+            padding: 0.6rem;
+            font-size: 0.75rem;
+        }
+
+        .student-count {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            white-space: nowrap;
         }
     }
 
@@ -304,7 +410,7 @@ $flash = getFlashMessage();
     <!-- Welcome Banner -->
     <div class="welcome-card">
         <div class="welcome-content">
-            <h2>Welcome, Professor <?php echo escape(getCurrentUserName()); ?>! 👨‍🏫</h2>
+            <h2>Welcome, Professor <?php echo escape(getCurrentUserName()); ?>!</h2>
             <p>Manage your courses and view your students' progress.</p>
         </div>
         <div class="welcome-actions">

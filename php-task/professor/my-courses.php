@@ -45,6 +45,7 @@ $flash = getFlashMessage();
 
     <div class="card">
         <?php if (count($courses) > 0) : ?>
+            <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -66,7 +67,7 @@ $flash = getFlashMessage();
                             </td>
                             <td>
                                 <a href="students.php?course_id=<?php echo $course['id']; ?>" 
-                                   class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                   class="btn btn-primary">
                                     View Students
                                 </a>
                             </td>
@@ -74,6 +75,7 @@ $flash = getFlashMessage();
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php else : ?>
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

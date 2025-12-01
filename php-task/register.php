@@ -363,9 +363,10 @@ $pageTitle = 'Register';
         .role-selector {
             display: flex;
             background-color: #f3f4f6;
-            border-radius: 10px;
-            padding: 4px;
+            border-radius: 12px;
+            padding: 5px;
             margin-bottom: 1.25rem;
+            gap: 5px;
         }
 
         .role-option {
@@ -378,14 +379,24 @@ $pageTitle = 'Register';
         }
 
         .role-option label {
-            display: block;
-            padding: 0.7rem 1rem;
-            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
             font-size: 0.9rem;
             color: #6b7280;
+        }
+
+        .role-option label img {
+            width: 24px;
+            height: 24px;
+            opacity: 0.6;
+            transition: all 0.3s ease;
         }
 
         .role-option input:checked + label {
@@ -394,8 +405,16 @@ $pageTitle = 'Register';
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
+        .role-option input:checked + label img {
+            opacity: 1;
+        }
+
         .role-option label:hover {
             color: #1a1a2e;
+        }
+
+        .role-option label:hover img {
+            opacity: 0.8;
         }
 
         .course-select-group {
@@ -446,12 +465,18 @@ $pageTitle = 'Register';
                     <div class="role-option">
                         <input type="radio" id="role_student" name="role" value="student" 
                                <?php echo $role === 'student' ? 'checked' : ''; ?>>
-                        <label for="role_student">🎓 Student</label>
+                        <label for="role_student">
+                            <img src="assets/student.svg" alt="Student">
+                            Student
+                        </label>
                     </div>
                     <div class="role-option">
                         <input type="radio" id="role_professor" name="role" value="professor"
                                <?php echo $role === 'professor' ? 'checked' : ''; ?>>
-                        <label for="role_professor">👨‍🏫 Professor</label>
+                        <label for="role_professor">
+                            <img src="assets/professor.svg" alt="Professor">
+                            Professor
+                        </label>
                     </div>
                 </div>
 
@@ -602,7 +627,7 @@ $pageTitle = 'Register';
                         emailStatus.className = 'email-status available';
                         isEmailAvailable = true;
                     } else {
-                        emailStatus.textContent =  'Email is already registered';
+                        emailStatus.textContent =  '* Email is already registered';
                         emailStatus.className = 'email-status taken';
                         isEmailAvailable = false;
                     }

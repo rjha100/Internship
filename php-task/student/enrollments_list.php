@@ -15,25 +15,6 @@ $pageTitle = 'My Enrollments';
 $pdo = getDBConnection();
 $studentId = getCurrentUserId();
 
-// Handle unenroll action
-if (isset($_POST['unenroll']) && isset($_POST['enrollment_id'])) {
-    if (verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-        $enrollmentId = (int)$_POST['enrollment_id'];
-        
-        // Verify this enrollment belongs to current user
-        $stmt = $pdo->prepare("SELECT id FROM enrollments WHERE id = ? AND student_id = ?");
-        $stmt->execute([$enrollmentId, $studentId]);
-        
-        if ($stmt->fetch()) {
-            $stmt = $pdo->prepare("DELETE FROM enrollments WHERE id = ?");
-            $stmt->execute([$enrollmentId]);
-            setFlashMessage('success', 'Successfully unenrolled from course.');
-        }
-    }
-    header('Location: enrollments_list.php');
-    exit();
-}
-
 // Get all enrollments for current student with course details
 $stmt = $pdo->prepare("
     SELECT e.id as enrollment_id, c.id as course_id, c.course_name
@@ -58,16 +39,16 @@ $flash = getFlashMessage();
 
     <div class="page-header">
         <h1 class="page-title">My Enrollments</h1>
-        <p class="page-subtitle">View and manage your course enrollments</p>
+        <p class="page-subtitle">View your course enrollments</p>
     </div>
 
     <div class="card">
         <?php if (count($enrollments) > 0) : ?>
+            <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
                         <th>Course Name</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -76,21 +57,11 @@ $flash = getFlashMessage();
                             <td>
                                 <strong><?php echo escape($enrollment['course_name']); ?></strong>
                             </td>
-                            <td>
-                                <form method="POST" action="" style="display: inline;" 
-                                      onsubmit="return confirm('Are you sure you want to unenroll from this course?');">
-                                    <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
-                                    <input type="hidden" name="enrollment_id" value="<?php echo $enrollment['enrollment_id']; ?>">
-                                    <button type="submit" name="unenroll" class="btn" 
-                                            style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: #ff6b6b; color: white;">
-                                        Unenroll
-                                    </button>
-                                </form>
-                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php else : ?>
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

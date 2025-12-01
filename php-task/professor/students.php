@@ -72,6 +72,7 @@ $flash = getFlashMessage();
 
     <div class="card">
         <?php if (count($students) > 0) : ?>
+            <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -108,6 +109,7 @@ $flash = getFlashMessage();
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php else : ?>
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

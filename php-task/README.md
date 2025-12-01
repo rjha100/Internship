@@ -1,6 +1,16 @@
 # Student Management System
 
-A PHP + MySQL web application for managing students, courses, and enrollments.
+A PHP + MySQL web application for managing students, courses, and enrollments with multi-role support (Student, Professor, Admin).
+
+## Features
+
+- **Multi-Role Authentication**: Student, Professor, and Admin roles with role-specific dashboards
+- **Course Management**: Full CRUD operations for courses (Admin)
+- **Enrollment System**: Students can browse and enroll in courses
+- **Professor Assignments**: Admins can assign professors to courses
+- **User Management**: Admin can manage all users with role filtering
+- **Mobile Responsive**: Fully responsive design with expandable table rows for mobile
+- **Modern UI**: Catppuccin-inspired purple gradient theme with Inter font
 
 ## Setup Instructions
 
@@ -46,90 +56,94 @@ php -S localhost:8000
 ```
 Then open `http://localhost:8000` in your browser.
 
-## How Each Page Works
+## User Roles
 
-### Login Page (`login.php`)
-- Students enter their email and password to log in
-- Credentials are verified against the database using prepared statements
-- Passwords are hashed using PHP's `password_hash()` function
-- On successful login, user is redirected to the dashboard
-- CSRF protection is implemented
+### Student
+- View available courses
+- Enroll/unenroll from courses
+- View personal enrollment history
 
-### Registration Page (`register.php`)
-- New students can create an account
-- **Client-side validation:**
-  - All fields are required
-  - Email format validation
-  - Real-time email uniqueness check via AJAX
-  - Password confirmation match
-  - Minimum password length (6 characters)
-- **Server-side validation:**
-  - All inputs are sanitized
-  - Email uniqueness is verified in database
-  - Password is securely hashed before storage
-- After successful registration, user is automatically logged in
+### Professor
+- View assigned courses
+- View enrolled students in their courses
 
-### Dashboard (`dashboard.php`)
-- Welcome page shown after login
-- Displays user's name and email
-- Navigation to other sections
+### Admin
+- Manage all users (create, edit, delete)
+- Manage courses (create, edit, delete)
+- Assign professors to courses
+- View and manage all enrollments
 
-### Course Management (`courses.php`)
-- View list of all courses
-- Add new courses (to be implemented)
+## Page Structure
 
-### Enrollment Page (`enrollment.php`)
-- Enroll in courses (to be implemented)
-- Students can only enroll themselves (not other students)
+### Public Pages
+- **Login** (`login.php`) - Authentication with email/password
+- **Register** (`register.php`) - New student registration with real-time email validation
 
-### Enrollment List (`enrollments_list.php`)
-- View all enrollments (to be implemented)
-- Shows Student Name, Email, and Course Name using JOIN
+### Student Pages (`student/`)
+- **Dashboard** - Welcome page with quick stats
+- **Courses** - Browse and enroll in available courses
+- **My Enrollments** - View enrolled courses
 
-### Logout (`logout.php`)
-- Destroys the user session
-- Redirects to login page
+### Professor Pages (`professor/`)
+- **Dashboard** - Overview of assigned courses
+- **My Courses** - List of courses they teach
+- **Students** - View students enrolled in their courses
 
-## Security Features
+### Admin Pages (`admin/`)
+- **Dashboard** - System overview with statistics
+- **Users** - User management with pagination and role filtering
+- **Courses** - Course CRUD operations
+- **Professors** - Professor-to-course assignments
+- **Enrollments** - View/manage all enrollments with course filtering
 
-1. **Prepared Statements (PDO)**: All database queries use prepared statements to prevent SQL injection
+## Mobile Responsive Features
 
-2. **Password Hashing**: Passwords are hashed using `password_hash()` with bcrypt
+- **Hamburger Navigation**: Collapsible menu on mobile devices
+- **Expandable Table Rows**: Tap to expand hidden column data on mobile
+- **Responsive Forms**: Full-width inputs and buttons on small screens
+- **Touch-Friendly**: Larger tap targets and buttons for mobile interaction
 
-3. **Input Validation**: All form inputs are validated on both client and server side
 
-4. **Output Escaping**: All output is escaped using `htmlspecialchars()` to prevent XSS
+## Technology Stack
 
-5. **CSRF Protection**: Forms include CSRF tokens to prevent cross-site request forgery
+- **Backend**: PHP 7.4+ with PDO for database access
+- **Database**: MySQL 5.7+
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Styling**: Custom CSS
+- **Font**: Inter
 
-6. **Session Security**: Proper session management with secure session handling
+## Project Structure
 
-## Sample Login Credentials
-
-After running the SQL file, you can log in with these sample accounts:
-
-| Email | Password |
-|-------|----------|
-| john.doe@email.com | password123 |
-| jane.smith@email.com | password123 |
-| bob.johnson@email.com | password123 |
-| alice.williams@email.com | password123 |
-| charlie.brown@email.com | password123 |
-
-## Assumptions Made
-
-1. **Single User Type**: The system only has student users (no admin roles)
-2. **Self-Enrollment Only**: Students can only enroll themselves in courses
-3. **No Email Verification**: Email addresses are not verified via email confirmation
-4. **Basic Phone Validation**: Phone numbers are validated for format only (digits, spaces, dashes, parentheses)
-5. **No Password Recovery**: Password reset functionality is not implemented
-6. **Session-Based Auth**: Authentication uses PHP sessions (no JWT or other token-based auth)
-
-## Future Enhancements (Bonus Tasks)
-
-- [ ] AJAX search for students
-- [ ] Pagination for student list
-- [ ] Delete student functionality with confirmation
-- [ ] Admin dashboard
-- [ ] Course editing and deletion
-- [ ] Enrollment date tracking
+```
+php-task/
+├── admin/              # Admin panel pages
+│   ├── dashboard.php
+│   ├── users.php
+│   ├── courses.php
+│   ├── professors.php
+│   └── enrollments.php
+├── professor/          # Professor pages
+│   ├── dashboard.php
+│   ├── my-courses.php
+│   └── students.php
+├── student/            # Student pages
+│   ├── dashboard.php
+│   ├── courses.php
+│   ├── enrollment.php
+│   └── enrollments_list.php
+├── config/             # Configuration files
+│   ├── database.php
+│   └── session.php
+├── includes/           # Shared components
+│   ├── header.php
+│   ├── footer.php
+│   └── functions.php
+├── database/           # Database schema
+│   └── schema.sql
+├── assets/             # Static assets
+├── index.php           # Entry point (redirects to login)
+├── login.php
+├── logout.php
+├── register.php
+└── check_email.php     # AJAX email validation
+```

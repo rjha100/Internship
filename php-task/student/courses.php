@@ -23,6 +23,59 @@ include '../includes/header.php';
 $flash = getFlashMessage();
 ?>
 
+<style>
+    .badge-primary {
+        white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+        .table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .table th:nth-child(1),
+        .table td:nth-child(1) {
+            width: 45%;
+        }
+
+        .table th:nth-child(2),
+        .table td:nth-child(2) {
+            width: 30%;
+        }
+
+        .table th:nth-child(3),
+        .table td:nth-child(3) {
+            width: 25%;
+        }
+
+        .table th,
+        .table td {
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-size: 0.7rem;
+            padding: 0.5rem 0.4rem;
+        }
+
+        .table td strong {
+            font-size: 0.7rem;
+        }
+
+        .badge-primary {
+            font-size: 0.6rem;
+            padding: 0.2rem 0.4rem;
+            white-space: nowrap;
+        }
+
+        .table .btn {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.6rem;
+            white-space: nowrap;
+        }
+    }
+</style>
+
 <div class="container">
     <?php if ($flash) : ?>
         <div class="alert alert-<?php echo escape($flash['type']); ?>">
@@ -37,6 +90,7 @@ $flash = getFlashMessage();
 
     <div class="card">
         <?php if (count($courses) > 0) : ?>
+            <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -58,7 +112,7 @@ $flash = getFlashMessage();
                             </td>
                             <td>
                                 <a href="enrollment.php?course_id=<?php echo $course['id']; ?>" 
-                                   class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                   class="btn btn-primary">
                                     Enroll
                                 </a>
                             </td>
@@ -66,6 +120,7 @@ $flash = getFlashMessage();
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php else : ?>
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

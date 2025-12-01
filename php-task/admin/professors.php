@@ -98,7 +98,7 @@ $flash = getFlashMessage();
         padding: 0.75rem;
         border: 1px solid #e5e7eb;
         border-radius: 6px;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
     
     .btn-sm {
@@ -113,6 +113,170 @@ $flash = getFlashMessage();
     
     .btn-danger:hover {
         background: #dc2626;
+    }
+
+    /* Expandable Row Styles */
+    .expand-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.2rem;
+        color: #6b7280;
+        transition: transform 0.2s;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .expand-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .expand-btn.expanded {
+        transform: rotate(180deg);
+    }
+
+    .row-details {
+        display: none;
+    }
+
+    .row-details.show {
+        display: table-row;
+    }
+
+    .row-details td {
+        padding: 0.5rem 0.75rem !important;
+        background: #f9fafb;
+        border-top: none !important;
+    }
+
+    .detail-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .detail-item svg {
+        width: 14px;
+        height: 14px;
+        opacity: 0.7;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .name-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .hide-mobile {
+        display: table-cell;
+    }
+
+    @media (max-width: 768px) {
+        .assignment-form {
+            padding: 1rem;
+            gap: 0.75rem;
+        }
+
+        .assignment-form .form-group {
+            min-width: 100%;
+        }
+
+        .assignment-form label {
+            font-size: 0.9rem;
+        }
+
+        .assignment-form select {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .table th {
+            font-size: 0.85rem;
+            padding: 0.85rem 0.75rem;
+            font-weight: 600;
+        }
+
+        .table td {
+            font-size: 0.95rem;
+            padding: 1rem 0.75rem;
+        }
+
+        .table td strong {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            border-radius: 8px;
+        }
+
+        .hide-mobile {
+            display: none;
+        }
+
+        .expand-btn {
+            display: inline-flex;
+            padding: 0.3rem;
+        }
+
+        .expand-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+        }
+
+        .clickable-row:active {
+            background: #f3f4f6;
+        }
+
+        .name-cell {
+            gap: 0.6rem;
+        }
+
+        .detail-content {
+            flex-direction: column;
+            gap: 0.75rem;
+            font-size: 0.90rem;
+        }
+
+        .detail-item {
+            gap: 0.5rem;
+        }
+
+        .detail-item svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .detail-label {
+            font-size: 0.95rem;
+        }
+
+        .row-details td {
+            padding: 1rem 1.25rem !important;
+        }
     }
 </style>
 
@@ -170,34 +334,66 @@ $flash = getFlashMessage();
             <h3>Current Assignments</h3>
         </div>
         <?php if (count($assignments) > 0) : ?>
+            <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
                         <th>Professor</th>
-                        <th>Course</th>
+                        <th class="hide-mobile">Course</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($assignments as $assignment) : ?>
-                        <tr>
+                    <?php foreach ($assignments as $index => $assignment) : ?>
+                        <tr class="clickable-row" onclick="toggleDetails(<?php echo $index; ?>, event)">
                             <td>
-                                <strong><?php echo escape($assignment['professor_name']); ?></strong>
-                                <br>
-                                <small style="color: #6b7280;"><?php echo escape($assignment['professor_email']); ?></small>
+                                <div class="name-cell">
+                                    <button class="expand-btn" id="expand-<?php echo $index; ?>" type="button">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                    </button>
+                                    <strong><?php echo escape($assignment['professor_name']); ?></strong>
+                                </div>
                             </td>
-                            <td><?php echo escape($assignment['course_name']); ?></td>
+                            <td class="hide-mobile"><?php echo escape($assignment['course_name']); ?></td>
                             <td>
-                                <a href="professors.php?remove=<?php echo $assignment['id']; ?>" 
-                                   class="btn btn-danger btn-sm"
-                                   onclick="return confirm('Are you sure you want to remove this assignment?');">
-                                    Remove
-                                </a>
+                                <div onclick="event.stopPropagation()">
+                                    <a href="professors.php?remove=<?php echo $assignment['id']; ?>" 
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('Are you sure you want to remove this assignment?');">
+                                        Remove
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Expandable details row -->
+                        <tr class="row-details" id="details-<?php echo $index; ?>">
+                            <td colspan="3">
+                                <div class="detail-content">
+                                    <div class="detail-item">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                            <polyline points="22,6 12,13 2,6"></polyline>
+                                        </svg>
+                                        <span class="detail-label">Email:</span>
+                                        <?php echo escape($assignment['professor_email']); ?>
+                                    </div>
+                                    <div class="detail-item">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                        </svg>
+                                        <span class="detail-label">Course:</span>
+                                        <?php echo escape($assignment['course_name']); ?>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php else : ?>
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -211,5 +407,21 @@ $flash = getFlashMessage();
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+function toggleDetails(index, event) {
+    // Only toggle on mobile
+    if (window.innerWidth > 768) return;
+    
+    // Don't toggle if clicking on a button/link
+    if (event.target.closest('.btn')) return;
+    
+    const details = document.getElementById('details-' + index);
+    const expandBtn = document.getElementById('expand-' + index);
+    
+    details.classList.toggle('show');
+    expandBtn.classList.toggle('expanded');
+}
+</script>
 
 <?php include '../includes/footer.php'; ?>
