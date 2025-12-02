@@ -160,19 +160,24 @@ $flash = getFlashMessage();
 
     .detail-item {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 0.35rem;
+        flex-wrap: nowrap;
     }
 
     .detail-item svg {
         width: 14px;
         height: 14px;
         opacity: 0.7;
+        flex-shrink: 0;
+        margin-top: 2px;
     }
 
     .detail-label {
         font-weight: 600;
         color: #374151;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .name-cell {

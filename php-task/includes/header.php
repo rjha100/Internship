@@ -526,7 +526,7 @@ require_once __DIR__ . '/functions.php';
             background-color: white;
             color: #6b7280;
             text-align: center;
-            padding: 0.75rem;
+            padding: 1.25rem;
             margin-top: auto;
             border-top: 1px solid #e5e7eb;
             font-size: 0.8rem;
@@ -642,8 +642,8 @@ require_once __DIR__ . '/functions.php';
             }
 
             .footer {
-                font-size: 0.7rem;
-                padding: 0.5rem;
+                font-size: 0.8rem;
+                padding: 1.0rem;
             }
 
             .empty-state {
