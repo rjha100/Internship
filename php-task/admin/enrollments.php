@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Admin - View All Enrollments
  * List and manage all student enrollments
  */
+
 require_once '../config/session.php';
 require_once '../config/database.php';
 require_once '../includes/functions.php';
@@ -454,7 +456,7 @@ $flash = getFlashMessage();
                     <a href="?page=<?php echo $page - 1; ?><?php echo $filterParam; ?>" class="page-btn">&laquo; Prev</a>
                 <?php endif; ?>
                 
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
                     <a href="?page=<?php echo $i; ?><?php echo $filterParam; ?>" 
                        class="page-btn <?php echo $i === $page ? 'active' : ''; ?>">
                         <?php echo $i; ?>

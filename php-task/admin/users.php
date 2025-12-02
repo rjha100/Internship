@@ -42,9 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $editId = isset($_POST['edit_id']) ? (int)$_POST['edit_id'] : null;
     
     // Validation
-    if (empty($name)) $errors[] = 'Name is required.';
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email is required.';
-    if (!in_array($role, ['student', 'professor', 'admin'])) $errors[] = 'Invalid role.';
+    if (empty($name)) {
+        $errors[] = 'Name is required.';
+    }
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Valid email is required.';
+    }
+    if (!in_array($role, ['student', 'professor', 'admin'])) {
+        $errors[] = 'Invalid role.';
+    }
     
     // Check if email already exists (for new users or if email changed)
     if (empty($errors)) {

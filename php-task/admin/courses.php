@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Admin - Manage Courses
  * List, add, edit, delete courses
  */
+
 require_once '../config/session.php';
 require_once '../config/database.php';
 require_once '../includes/functions.php';
@@ -18,7 +20,7 @@ $errors = [];
 // Handle delete course
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $deleteId = (int)$_GET['delete'];
-    
+
     // Delete course (enrollments and professor_courses will cascade)
     $stmt = $pdo->prepare("DELETE FROM courses WHERE id = ?");
     $stmt->execute([$deleteId]);
@@ -30,12 +32,12 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $courseName = sanitize($_POST['course_name'] ?? '');
     $editId = isset($_POST['edit_id']) ? (int)$_POST['edit_id'] : null;
-    
+
     // Validation
     if (empty($courseName)) {
         $errors[] = 'Course name is required.';
     }
-    
+
     // Check if course name already exists
     if (empty($errors)) {
         $stmt = $pdo->prepare("SELECT id FROM courses WHERE course_name = ? AND id != ?");
@@ -44,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Course name already exists.';
         }
     }
-    
+
     if (empty($errors)) {
         if ($editId) {
             // Update existing course
