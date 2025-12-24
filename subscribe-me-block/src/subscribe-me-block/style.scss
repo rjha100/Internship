@@ -1,0 +1,130 @@
+/**
+ * Styles for Subscribe Me Block
+ * Applied on both frontend and editor
+ */
+
+.wp-block-smb-subscribe-me-block {
+	padding: 30px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	border-radius: 12px;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+	color: #fff;
+	max-width: 600px;
+	margin: 20px auto;
+}
+
+.smb-subscribe-form {
+	text-align: center;
+
+	h3 {
+		margin: 0 0 20px 0;
+		font-size: 24px;
+		font-weight: 600;
+		color: #fff;
+	}
+}
+
+.smb-form-group {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: stretch;
+}
+
+.smb-email-input {
+	flex: 1;
+	min-width: 250px;
+	padding: 14px 18px;
+	font-size: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.95);
+	color: #333;
+	transition: all 0.3s ease;
+
+	&:focus {
+		outline: none;
+		border-color: #fff;
+		background: #fff;
+		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+	}
+
+	&::placeholder {
+		color: #999;
+	}
+}
+
+.smb-subscribe-button {
+	padding: 14px 32px;
+	font-size: 16px;
+	font-weight: 600;
+	background: #fff;
+	color: #667eea;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	white-space: nowrap;
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+		background: #f0f0f0;
+	}
+
+	&:active {
+		transform: translateY(0);
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+		transform: none;
+	}
+}
+
+.smb-message {
+	margin-top: 15px;
+	padding: 12px 20px;
+	border-radius: 6px;
+	font-size: 15px;
+	font-weight: 500;
+	
+	&.smb-message-success {
+		background: rgba(76, 175, 80, 0.9);
+		color: #fff;
+		border: 2px solid rgba(255, 255, 255, 0.3);
+	}
+	
+	&.smb-message-error {
+		background: rgba(244, 67, 54, 0.9);
+		color: #fff;
+		border: 2px solid rgba(255, 255, 255, 0.3);
+	}
+}
+
+.smb-editor-note {
+	margin-top: 15px;
+	font-size: 13px;
+	font-style: italic;
+	opacity: 0.8;
+	color: #fff;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+	.wp-block-smb-subscribe-me-block {
+		padding: 20px;
+	}
+
+	.smb-form-group {
+		flex-direction: column;
+	}
+
+	.smb-email-input,
+	.smb-subscribe-button {
+		width: 100%;
+		min-width: 100%;
+	}
+}
